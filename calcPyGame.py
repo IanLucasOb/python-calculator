@@ -1,65 +1,74 @@
 # TODO FIX
 import pygame
-import sympy 
+import sympy
+
 # PyGame Initial config
 pygame.init()
-pygame.display.set_caption('Calculadora 🤙️🥶️')
+pygame.display.set_caption("Calculadora 🤙️🥶️")
 screen = pygame.display.set_mode((320, 300))
 clock = pygame.time.Clock()
 running = True
 # Colors:
-black = (0,0,0)
-white = (255,255,255)
-grey = (100,100,100)
-red = (255,0,0)
+black = (0, 0, 0)
+white = (255, 255, 255)
+grey = (100, 100, 100)
+red = (255, 0, 0)
 
-inputValue = ''
+inputValue = ""
 result = 0
-operators = ['0',"+",'-',"*","//","%","**"] # Operators and 0 
+operators = ["0", "+", "-", "*", "//", "%", "**"]  # Operators and 0
 haveSomeOperator = False
 endsWithOperator = False
-expressionIsInvalid = ''
+expressionIsInvalid = ""
 
 # Generate a text configuration with a font and text
-def textConfig(text, font,color=black):
+def textConfig(text, font, color=black):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
 
+
 # Create an text element in screen
-def drawText(text,positionX,positionY,width,height,fontSize=20,color=black):
-    smallText = pygame.font.Font("freesansbold.ttf",fontSize)
-    textSurf, textRect = textConfig(text, smallText,color)
-    textRect.center = ( (positionX+(width/2)), (positionY+(height/2)) )
+def drawText(text, positionX, positionY, width, height, fontSize=20, color=black):
+    smallText = pygame.font.Font("freesansbold.ttf", fontSize)
+    textSurf, textRect = textConfig(text, smallText, color)
+    textRect.center = ((positionX + (width / 2)), (positionY + (height / 2)))
     screen.blit(textSurf, textRect)
+
 
 # Draw value input
 def drawValueTextBox():
     global inputValue
     global result
     value = str(result) if result else inputValue
-    drawText(value,0,-10,320,60)
+    drawText(value, 0, -10, 320, 60)
+
 
 # Creates a button element in screen
-def drawButton(color,positionX,positionY,width,height):
-   global button
-   global buttonNumber
-   pygame.draw.rect(screen, color,(positionX,positionY,width,height))
+def drawButton(color, positionX, positionY, width, height):
+    global button
+    global buttonNumber
+    pygame.draw.rect(screen, color, (positionX, positionY, width, height))
+
 
 # Create buttons and verify if mouse is over it
-def createButton(text,width,height,positionX,positionY,activeColor,inactiveColor):
+def createButton(text, width, height, positionX, positionY, activeColor, inactiveColor):
     mouse = pygame.mouse.get_pos()
-    if positionX+width > mouse[0] > positionX and positionY+height > mouse[1] > positionY:
-        drawButton(activeColor,positionX,positionY,width,height)
+    if (
+        positionX + width > mouse[0] > positionX
+        and positionY + height > mouse[1] > positionY
+    ):
+        drawButton(activeColor, positionX, positionY, width, height)
     else:
-        drawButton(inactiveColor,positionX,positionY,width,height)
-    drawText(text,positionX,positionY,width,height)
+        drawButton(inactiveColor, positionX, positionY, width, height)
+    drawText(text, positionX, positionY, width, height)
+
 
 # Find the button that was clicked based in x and y
 def whichButtonWasClicked(position):
     x, y = position
-    rows = [80, 120, 160, 200, 240,280]
+    rows = [80, 120, 160, 200, 240, 280]
     cols = [106, 212, 318]
-    
+
     if 60 < y <= rows[0]:
         if x <= cols[0]:
             setValue(1)
@@ -85,31 +94,40 @@ def whichButtonWasClicked(position):
         if x <= cols[0]:
             setValue(0)
         elif x <= cols[1]:
-            setValue(' + ')
+            setValue(" + ")
         elif x <= cols[2]:
-            setValue(' - ')
+            setValue(" - ")
     elif rows[3] < y <= rows[4]:
         if x <= cols[0]:
-            setValue(' * ')
+            setValue(" * ")
         elif x <= cols[1]:
-            setValue(' // ')
+            setValue(" // ")
         elif x <= cols[2]:
-            setValue(' % ')
+            setValue(" % ")
     elif rows[4] < y <= rows[5]:
         if x <= cols[0]:
-            setValue(' ** ')
+            setValue(" ** ")
         elif x <= cols[2]:
             # '=' button
             calculateResult()
 
+
 def setValue(value):
     global inputValue
+    global result
+    if result:
+        result = ""
     _value = str(value)
     trimValue = _value.strip()
     valueIsOperator = trimValue in operators
-    if (inputValue.endswith(_value) and valueIsOperator) or (inputValue == '' and valueIsOperator) or (valueIsOperator and str(inputValue)[len(str(inputValue)) - 2] in operators) :
+    if (
+        (inputValue.endswith(_value) and valueIsOperator)
+        or (inputValue == "" and valueIsOperator)
+        or (valueIsOperator and str(inputValue)[len(str(inputValue)) - 2] in operators)
+    ):
         return
     inputValue = inputValue + _value
+
 
 # Calculate result :D
 def calculateResult():
@@ -119,25 +137,26 @@ def calculateResult():
     global expressionIsInvalid
     global endsWithOperator
     endsWithOperator = False
-    if inputValue == '':
+    if inputValue == "":
         expressionIsInvalid = False
         return
     for i in operators:
         if not endsWithOperator and i != 0:
-            endsWithOperator =  inputValue.endswith(f'{i} ')
+            endsWithOperator = inputValue.endswith(f"{i} ")
         if not haveSomeOperator:
             haveSomeOperator = inputValue.find(i) > 0
     if haveSomeOperator and not endsWithOperator:
         result = sympy.sympify(inputValue)
-        print('resultado',result)
-        if result != '':
-            inputValue = ''
+        if result != "":
+            inputValue = ""
             haveSomeOperator = False
             expressionIsInvalid = False
         else:
             expressionIsInvalid = True
     else:
         expressionIsInvalid = True
+
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -154,13 +173,13 @@ while running:
     # RENDER YOUR GAME HERE'
 
     # Draw the input that show the values and operations
-    drawValueTextBox() 
+    drawValueTextBox()
     # If expression is invalid, show a message
     if expressionIsInvalid:
-        drawText('Expressão inválida!',0,-10,320,85,14,red)
+        drawText("Expressão inválida!", 0, -10, 320, 85, 14, red)
 
     # Create 1-9 buttons
-    for i in reversed(range(1,10)):
+    for i in reversed(range(1, 10)):
         if i <= 3:
             positionY = 40
             positionX = 107 * (i - 1)
@@ -170,8 +189,8 @@ while running:
         else:
             positionY = 120
             positionX = 107 * (i - 7)
-        createButton(str(i),106.3,40,positionX,positionY,grey,white)
-    for idx,operator in enumerate(operators,start=1):
+        createButton(str(i), 106.3, 40, positionX, positionY, grey, white)
+    for idx, operator in enumerate(operators, start=1):
         if idx <= 3:
             positionY = 160
             positionX = 107 * (idx - 1)
@@ -181,11 +200,11 @@ while running:
         else:
             positionY = 240
             positionX = 107 * (idx - 7)
-        createButton(str(operator),106.3,40,positionX,positionY,grey,white)
+        createButton(str(operator), 106.3, 40, positionX, positionY, grey, white)
 
-        createButton('=',212,40,107,240,grey,white)
+        createButton("=", 212, 40, 107, 240, grey, white)
         # createButton(str('+'),106.3,40,107,160,grey,white)
-    drawText('v1.0.0 - Ianzin',0,250,40,85,10)
+    drawText("v1.0.0 - Ianzin", 15, 250, 40, 85, 10)
     pygame.display.update()
     clock.tick(15)  # limits FPS to 60
 
